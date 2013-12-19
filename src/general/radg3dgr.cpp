@@ -26,6 +26,12 @@
 
 #include <math.h>
 
+//-added for compatibility with gcc > 4.6.3 ------- -----------------------
+
+#include <cstdio>
+
+using namespace std;
+
 //-------------------------------------------------------------------------
 
 radTSend radTg3dGraphPresent::Send;
