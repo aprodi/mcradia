@@ -24,7 +24,7 @@
 
 //-added for compatibility with gcc > 4.6.3 ------- -----------------------
 
-#include <math.h>
+#include <cstdlib>
 #include <cstring> 
 
 using namespace std;
