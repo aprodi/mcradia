@@ -10,3 +10,5 @@ mcradia is a fork of Radia v4.30 to expand its functionality to tracking the tra
 The aim is to embed numerical propagation in magnetic fields within the general framework of a Monte Carlo neutron ray tracing simulation, such as the popular <a href="http://www.mcstas.org">McStas</a> implementation for neutron scattering instrumentation.
 
 <a href="ttps://github.com/aprodi/mcradia">mcradia</a> (<a href="http://www.mcstas.org">McStas</a>  + <a href="http://www.esrf.eu/Accelerators/Groups/InsertionDevices/Software/Radia">Radia</a>) will interface the two codes at low level.
+
+RADIA is Copyright (C) 1997-2013 of the European Synchrotron Radiation Facility (ESRF).
