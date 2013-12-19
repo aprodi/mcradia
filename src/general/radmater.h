@@ -25,6 +25,12 @@
 #include <math.h>
 #include <sstream>
 
+//-added for compatibility with later gcc  versions -----------------------
+
+#include <cstring> 
+
+using namespace std;
+
 //-------------------------------------------------------------------------
 
 class radTMaterial;
