@@ -21,6 +21,14 @@
 #include <vector>
 #include <string>
 
+
+//-added for compatibility with gcc > 4.6.3 ------- -----------------------
+
+#include <math.h>
+#include <cstring> 
+
+using namespace std;
+
 //-------------------------------------------------------------------------
 
 class radTIOBuffer /*: public ErrorWarning*/ {
