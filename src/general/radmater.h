@@ -25,7 +25,7 @@
 #include <math.h>
 #include <sstream>
 
-//-added for compatibility with later gcc  versions -----------------------
+//-added for compatibility with gcc > 4.6.3 ------- -----------------------
 
 #include <cstring> 
 
