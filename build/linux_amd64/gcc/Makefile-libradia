@@ -1,0 +1,82 @@
+################################################################################
+#
+#  MCRADIA
+#
+# Makefile for RADIA4.3, simply type make on OSX, AIX, IRIX, OSF1, HP-UX, SunOS 
+# or Linux to build the programme. Type make gulp_debug to build programme with 
+# debugging on, type make clean to remove all objects or make clean_debug to 
+# remove all objects from version with debug information. Type make tar to 
+# create gzipped tar file of source code, documentation and examples. Type make 
+# html to convert help.txt to help.html.
+#
+# Original makefile by O. Chubar, adapted for MCRADIA by AP
+#
+# Portions of this makefile require the use of GNU make.
+# see http://www.gnu.org/software/make for more information.
+#
+################################################################################
+
+SYS=		Linux-x86-64
+
+# McRadia local installation
+SOFTDEVDIR=	/home/andrea/tmp/mcradia
+RADSRCDIR=	$(SOFTDEVDIR)/src
+RADSRCGENDIR=	$(RADSRCDIR)/core
+RADSRCPARSEDIR=	$(RADSRCDIR)/ext/auxparse
+RADSRCGMDIR=	$(RADSRCDIR)/ext/genmath
+RADSRCTRIDIR=	$(RADSRCDIR)/ext/triangle
+RADSRCDLLDIR=	$(RADSRCDIR)/lib
+EXTLIBDIR=	$(SOFTDEVDIR)/ext_lib
+RADBUILDIR=	$(SOFTDEVDIR)/build/linux_amd64/gcc
+# McRadia bindings
+RADSRCBINDIR=	$(RADSRCDIR)/bindings
+RADSRCCDIR=	$(RADSRCBINDIR)/c
+RADSRCMLDIR=	$(RADSRCBINDIR)/mathlink
+RADSRCPYDIR=	$(RADSRCBINDIR)/python
+# Include
+SHINCLUDE=	-I$(RADSRCGMDIR) -I$(RADSRCPARSEDIR) -I$(RADSRCTRIDIR)
+# Link
+LDFLAGS=        -L$(EXTLIBDIR) -lfftw -lm -lpthread -lrt
+
+CC = /usr/bin/gcc
+CXX = /usr/bin/g++
+
+AR = ar
+RM = rm
+
+RADSRCDEF=	-D__GCC__ -DFFTW_ENABLE_FLOAT -DNO_TIMER -DANSI_DECLARATORS -DTRILIBRARY -DLINUX
+
+CFLAGS=		-O3 -fPIC -march=corei7-avx -mtune=corei7
+
+OBJS= 	radapl1.o radapl2.o radapl3.o radapl4.o radapl5.o radapl6.o radapl7.o radarccu.o radcast.o radentry.o radexpgn.o radflm.o radg3d.o radg3dgr.o radgroup.o radinter.o radintrc.o radiobuf.o radmamet.o radmater.o radplnr1.o radplnr2.o radptrj.o radrec.o radrlmet.o radsbdac.o radsbdep.o radsbdrc.o radsbdvp.o radsend.o radvlpgn.o gmtrans.o gmfft.o triangle.o auxparse.o 
+
+RADIALIB=	libradia.a
+RADCLIENT=	radclient
+BINARIES =  	libradia radclient
+
+all : $(BINARIES)
+
+libradia:	$(OBJS) 
+		$(AR) rcs $(RADIALIB) $(OBJS) 
+		$(RM) -rf $(OBJS)
+
+%.o: 		$(RADSRCGENDIR)/%.cpp
+		$(CC) $(CFLAGS) $(RADSRCDEF) $(SHINCLUDE) -c $<  
+
+%.o: 		$(RADSRCTRIDIR)/%.c
+		$(CC) $(CFLAGS) -O $(RADSRCDEF) -I$(RADSRCTRIDIR) -c $<  
+
+%.o:		$(RADSRCGMDIR)/%.cpp 
+		$(CC) $(CFLAGS) $(RADSRCDEF) -c $<
+
+%.o: 		$(RADSRCPARSEDIR)/%.cpp
+		$(CC) $(CFLAGS) $(RADSRCDEF) -c $<  
+
+radentry.o:	$(RADSRCDLLDIR)/radentry.cpp 
+		$(CC) $(CFLAGS) -c $(RADSRCDLLDIR)/radentry.cpp -O3 $(RADSRCDEF) $(SHINCLUDE) -I$(RADSRCGENDIR)
+
+radclient: 	$(RADSRCCDIR)/radclient.cpp
+		$(CXX) $(CFLAGS) -I$(RADSRCDLLDIR) -o $(RADCLIENT) $(RADSRCCDIR)/radclient.cpp libradia.a $(LDFLAGS)  
+
+clean:
+	        @ $(RM) -rf *.o $(RADSRCMLDIR)/radia_tm_linux.c $(RADIAML) $(RADIALIB) $(RADCLIENT)

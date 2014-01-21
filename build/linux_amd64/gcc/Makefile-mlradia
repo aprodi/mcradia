@@ -1,0 +1,92 @@
+################################################################################
+#
+#  MCRADIA
+#
+# Makefile for RADIA4.3, simply type make on OSX, AIX, IRIX, OSF1, HP-UX, SunOS 
+# or Linux to build the programme. Type make gulp_debug to build programme with 
+# debugging on, type make clean to remove all objects or make clean_debug to 
+# remove all objects from version with debug information. Type make tar to 
+# create gzipped tar file of source code, documentation and examples. Type make 
+# html to convert help.txt to help.html.
+#
+# Original makefile by O. Chubar, adapted for MCRADIA by AP
+#
+# Portions of this makefile require the use of GNU make.
+# see http://www.gnu.org/software/make for more information.
+#
+################################################################################
+
+SYS=		Linux-x86-64
+
+# Variables relating to Mathematica local installation
+MATHVERSION=	9.0
+MLAPPDIR=	/usr/local/Wolfram/Mathematica/9.0/AddOns/Applications/Radia
+MLORIGDIR=	/usr/local/Wolfram/Mathematica/${MATHVERSION}/SystemFiles/Links/MathLink/DeveloperKit/${SYS}/CompilerAdditions
+MLMPREP=	$(MLORIGDIR)/mprep
+
+# McRadia local installation
+SOFTDEVDIR=	/home/andrea/tmp/mcradia
+RADSRCDIR=	$(SOFTDEVDIR)/src
+RADSRCGENDIR=	$(RADSRCDIR)/core
+RADSRCPARSEDIR=	$(RADSRCDIR)/ext/auxparse
+RADSRCGMDIR=	$(RADSRCDIR)/ext/genmath
+RADSRCTRIDIR=	$(RADSRCDIR)/ext/triangle
+RADSRCDLLDIR=	$(RADSRCDIR)/lib
+# McRadia bindings
+RADSRCBINDIR=	$(RADSRCDIR)/bindings
+RADSRCCDIR=	$(RADSRCBINDIR)/c
+RADSRCMLDIR=	$(RADSRCBINDIR)/mathlink
+RADSRCPYDIR=	$(RADSRCBINDIR)/python
+EXTLIBDIR=	$(SOFTDEVDIR)/ext_lib
+RADBUILDIR=	$(SOFTDEVDIR)/build/linux_amd64/gcc
+# Include
+SHINCLUDE=	-I$(RADSRCGMDIR) -I$(RADSRCPARSEDIR) -I$(RADSRCTRIDIR)
+MLINCLUDE=	-I$(MLORIGDIR)
+# Link
+LDMATH=		-L$(MLORIGDIR) -lML64i3 
+LDFLAGS=        -L$(EXTLIBDIR) -lfftw -lm -lpthread -lrt
+
+CC  = /usr/bin/gcc
+CXX = /usr/bin/g++
+
+AR = ar
+CP = cp
+RM = rm
+
+RADSRCDEFMATH=	-D__GCC__ -D__MATHEMATICA__ -DFFTW_ENABLE_FLOAT -DNO_TIMER -DANSI_DECLARATORS -DTRILIBRARY -DLINUX
+
+CFLAGS=		-O3 -fPIC -march=corei7-avx -mtune=corei7
+
+MLOBJS= 	radia_tm_linux.o radapl1.o radapl2.o radapl3.o radapl4.o radapl5.o radapl6.o radapl7.o radarccu.o radcast.o radexpgn.o radflm.o radg3d.o radg3dgr.o radgroup.o radinter.o radintrc.o radiobuf.o radmamet.o radmater.o radplnr1.o radplnr2.o radptrj.o radrec.o radrlmet.o radsbdac.o radsbdep.o radsbdrc.o radsbdvp.o radsend.o radvlpgn.o gmtrans.o gmfft.o triangle.o auxparse.o 
+
+RADIAML=	Radia.exe
+
+all : mlradia
+
+mlradia:	$(MLOBJS) 
+		$(CXX) $(MLINCLUDE) $(MLOBJS) $(LDMATH) $(LDFLAGS) -o $(RADIAML) 
+		$(RM) -rf $(MLOBJS)
+
+$(RADSRCMLDIR)/radia_tm_linux.c:	$(RADSRCMLDIR)/radia.tm
+		$(MLMPREP) -o $(RADSRCMLDIR)/radia_tm_linux.c $(RADSRCMLDIR)/radia.tm
+
+radia_tm_linux.o:	$(RADSRCMLDIR)/radia_tm_linux.c 
+		$(CC) $(CFLAGS) -c $(RADSRCMLDIR)/radia_tm_linux.c -O3 $(RADSRCDEFMATH) $(MLINCLUDE)
+
+%.o: 	$(RADSRCGENDIR)/%.cpp
+	$(CC) $(CFLAGS) $(RADSRCDEFMATH) $(MLINCLUDE) $(SHINCLUDE) -c $<  
+
+%.o:	$(RADSRCTRIDIR)/%.c 
+	$(CC) $(CFLAGS) -O $(RADSRCDEFMATH) -I$(RADSRCTRIDIR) -c $<
+
+%.o:	$(RADSRCGMDIR)/%.cpp 
+	$(CC) $(CFLAGS) -O3 $(RADSRCDEFMATH) -I$(RADSRCGMDIR) -c $<
+
+%.o:	$(RADSRCPARSEDIR)/%.cpp
+	$(CC) $(CFLAGS) $(RADSRCDEFMATH) -c $<  
+
+install:
+	@ $(CP) $(RADIAML) $(MLAPPDIR)/
+
+clean:
+	        @ $(RM) -rf *.o $(RADSRCMLDIR)/radia_tm_linux.c $(RADIAML)

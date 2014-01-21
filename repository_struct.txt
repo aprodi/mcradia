@@ -1,0 +1,35 @@
+/mcradia                    //Top level folder
+
+        /build              //Make and build files, IDE project files
+            /linux_amd64    //Linux AMD64 platform
+	    	     /gcc
+		     /icc
+		     /py
+
+        /doc                //Doxygen Documentation
+
+	/example 	    // mcradia examples
+
+        /ext_lib            //External or third-party libraries
+            /platforms      //Platform-specific code for ...
+                      /linux_amd64    //Linux AMD64 platform
+                      /linux_i386     //Linux 32-bit platform
+                      /macosx         //Mac OS X
+                      /win32          //Windows 32-bit platform
+                      /win64          //Windows 64-bit platform
+            /src            // fftw ?
+
+        /src                //Source code tree 
+            /bindings       //Bindings to other languages such as ...
+                      /c
+                      /mathlink
+		      /python
+	    /core	    //Platform-independent modules, components or subprojects
+	    /ext	    //Auxiliary libraries source
+		/auxparse
+		/genmath
+		/triangle
+            /h              //Header files
+	    /lib 	    //extra components to build library
+
+        /test               //Automated test scripts

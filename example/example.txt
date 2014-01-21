@@ -1,0 +1,1 @@
+here examples of Radia calculations relevant to McStas/Radia interaction, both as mcstas instrument files, c-clients, and Mathematica notebooks
