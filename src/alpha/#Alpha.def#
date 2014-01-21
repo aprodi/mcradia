@@ -1,0 +1,15 @@
+EXPORTS
+geterror
+getwarning
+getostream
+teste
+divi
+clientstructure
+clientarray
+dllarray
+getdouble
+getsize
+geterrorsize
+getwarningsize
+geterrortext
+getwarningtext
