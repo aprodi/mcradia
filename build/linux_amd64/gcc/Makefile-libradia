@@ -19,7 +19,7 @@
 SYS=		Linux-x86-64
 
 # McRadia local installation
-SOFTDEVDIR=	/home/erkn/Repositories/mcradia
+#SOFTDEVDIR=	${HOME}/Repositories/mcradia
 RADSRCDIR=	$(SOFTDEVDIR)/src
 RADSRCGENDIR=	$(RADSRCDIR)/core
 RADSRCPARSEDIR=	$(RADSRCDIR)/ext/auxparse
@@ -27,7 +27,7 @@ RADSRCGMDIR=	$(RADSRCDIR)/ext/genmath
 RADSRCTRIDIR=	$(RADSRCDIR)/ext/triangle
 RADSRCDLLDIR=	$(RADSRCDIR)/lib
 EXTLIBDIR=	$(SOFTDEVDIR)/ext_lib
-RADBUILDIR=	$(SOFTDEVDIR)/build/linux_amd64/gcc
+RADBUILDIR=	$(CURDIR)
 # McRadia bindings
 RADSRCBINDIR=	$(RADSRCDIR)/bindings
 RADSRCCDIR=	$(RADSRCBINDIR)/c
@@ -46,7 +46,7 @@ RM = rm
 
 RADSRCDEF=	-D__GCC__ -DALPHA__DLL__ -DFFTW_ENABLE_FLOAT -DNO_TIMER -DANSI_DECLARATORS -DTRILIBRARY=1 -DLINUX
 
-CFLAGS=		-g -fPIC 
+CFLAGS=		-g -fPIC -march=native
 
 OBJS= 	radapl1.o radapl2.o radapl3.o radapl4.o radapl5.o radapl6.o radapl7.o radarccu.o radcast.o radentry.o radexpgn.o radflm.o radg3d.o radg3dgr.o radgroup.o radinter.o radintrc.o radiobuf.o radmamet.o radmater.o radplnr1.o radplnr2.o radptrj.o radrec.o radrlmet.o radsbdac.o radsbdep.o radsbdrc.o radsbdvp.o radsend.o radvlpgn.o gmtrans.o gmfft.o triangle.o auxparse.o 
 

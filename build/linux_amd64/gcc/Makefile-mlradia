@@ -20,7 +20,7 @@ SYS=		Linux-x86-64
 
 # Variables relating to Mathematica local installation
 MATHVERSION=	10.0
-MLAPPDIR=	/usr/local/Wolfram/Mathematica/10.0/AddOns/Applications/Radia
+MLAPPDIR=	/usr/local/Wolfram/Mathematica/${MATHVERSION}/AddOns/Applications/Radia
 MLORIGDIR=	/usr/local/Wolfram/Mathematica/${MATHVERSION}/SystemFiles/Links/MathLink/DeveloperKit/${SYS}/CompilerAdditions
 MLMPREP=	$(MLORIGDIR)/mprep
 
@@ -90,3 +90,4 @@ install:
 
 clean:
 	        @ $(RM) -rf *.o $(RADSRCMLDIR)/radia_tm_linux.c $(RADIAML)
+
