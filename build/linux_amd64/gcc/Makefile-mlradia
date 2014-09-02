@@ -19,13 +19,13 @@
 SYS=		Linux-x86-64
 
 # Variables relating to Mathematica local installation
-MATHVERSION=	9.0
-MLAPPDIR=	/usr/local/Wolfram/Mathematica/9.0/AddOns/Applications/Radia
+MATHVERSION=	10.0
+MLAPPDIR=	/usr/local/Wolfram/Mathematica/10.0/AddOns/Applications/Radia
 MLORIGDIR=	/usr/local/Wolfram/Mathematica/${MATHVERSION}/SystemFiles/Links/MathLink/DeveloperKit/${SYS}/CompilerAdditions
 MLMPREP=	$(MLORIGDIR)/mprep
 
 # McRadia local installation
-SOFTDEVDIR=	/home/andrea/tmp/mcradia
+SOFTDEVDIR=	/home/erkn/Repositories/mcradia
 RADSRCDIR=	$(SOFTDEVDIR)/src
 RADSRCGENDIR=	$(RADSRCDIR)/core
 RADSRCPARSEDIR=	$(RADSRCDIR)/ext/auxparse

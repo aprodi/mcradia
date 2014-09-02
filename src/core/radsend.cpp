@@ -1315,7 +1315,7 @@ int radTSend::GetString(const char*& Str)
 void radTSend::DisownString(char* Str)
 {
 #ifdef __MATHEMATICA__
-	MLDisownString(stdlink, Str);
+	MLReleaseString(stdlink, Str);
 #endif
 
 }

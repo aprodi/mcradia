@@ -1,9 +1,9 @@
 all: mlradia libradia radclient
 
 mlradia:
-		cd build/linux_amd64/gcc; make -f Makefile-mlradia -j8
+		cd build/linux_amd64/gcc; make -f Makefile-mlradia -j4
 libradia:
-		cd build/linux_amd64/gcc; make -f Makefile-libradia libradia -j8
+		cd build/linux_amd64/gcc; make -f Makefile-libradia libradia -j4
 
 radclient:
 		cd build/linux_amd64/gcc; make -f Makefile-libradia radclient
