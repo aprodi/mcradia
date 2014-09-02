@@ -36,6 +36,7 @@
 /*  report()   Print the input or output.                                    */
 /*                                                                           */
 /*****************************************************************************/
+int gErrorTRIANGLE;
 
 void report(io, markers, reporttriangles, reportneighbors, reportsegments,
             reportedges, reportnorms)

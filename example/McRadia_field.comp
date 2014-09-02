@@ -1,0 +1,123 @@
+/*******************************************************************************
+*
+* McStas, neutron ray-tracing package
+*         Copyright 1997-2002, All rights reserved
+*         Risoe National Laboratory, Roskilde, Denmark
+*         Institut Laue Langevin, Grenoble, France
+*
+* Component: McRadia_field.comp
+*
+* %I
+*
+* Written by: Erik B Knudsen and Andrea Prodi
+* Origin: DTu Physics, ILL
+*
+* Magnetic field described by Radia.
+*
+* %D
+*
+* %P
+* Input parameters:
+*
+* (none)
+*
+* %E
+*******************************************************************************/
+
+  DEFINE COMPONENT McRadia_field
+DEFINITION PARAMETERS ()
+  SETTING PARAMETERS (xwidth=0,yheight=0, zdepth=0)
+OUTPUT PARAMETERS ()
+/* Neutron parameters: (x,y,z,vx,vy,vz,t,sx,sy,sz,p) */ 
+
+SHARE
+%{
+  #include <radentry.h>
+
+  typedef struct radia_data {
+    int ppoly;
+    int *pNb;
+
+  } radia_data;
+
+
+  /*define the magnetic field function*/
+
+  int radia_magnetic_field(double x, double y, double z, double t, double *bx, double *by, double *bz, void *data){
+    int status;
+    double ObsP[3], ArrB[3];
+    int ppoly;
+    radia_data *rdata=(radia_data *)data;
+
+    ObsP[0]=x;
+    ObsP[1]=y;
+    ObsP[2]=z;
+
+    status=RadFld(ArrB,rdata->pNb,rdata->ppoly, "B", ObsP,1);
+    *bx=ArrB[0];
+    *by=ArrB[1];
+    *bz=ArrB[2];
+  }
+
+  
+
+%}
+
+
+DECLARE
+%{
+  radia_data rdata;
+  void *dataptr;
+
+%}
+
+INITIALIZE
+%{
+  double M[] = {0., 0., 1.};
+
+  double FV[] = {0.,0.,1.,1.,-1.,1.,-1.,-1.,1.,-1.,0.,0.,0.,1.,1.,1.,1.,0.};
+  int SL[] = {1,4,1,3};
+  double AT[] = {0., 1., 2., 3.};
+  int ppoly;
+  int status;
+  
+  status=RadObjMltExtPgn(&(rdata.ppoly),FV,SL,AT,4,M);
+  if(status<0){
+    fprintf(stderr,"Error(%s): Could not set up radia extruded polygon. Aborting\n");
+  }
+
+%}
+
+
+TRACE
+%{
+  /**/
+  int status;
+  double bx,by,bz,t0,t1;
+  status=box_intersect(&t0,&t1,x,y,z,vx,vy,vz,xwidth,yheight,zdepth);
+  if(status){
+    PROP_DT(t0);
+    SCATTER;
+    radia_magnetic_field(x,y,z,t,&bx,&by,&bz,(void *) (&rdata) );
+    printf(" @ ( %g , %g , %g ) = ( %g , %g , %g )\n",x,y,z,bx,by,bz);
+    /*get next path-point from radia*/
+    /*set v-vector to point there*/
+    /*find t and propagate*/
+    PROP_DT(t1);
+    SCATTER;
+    radia_magnetic_field(x,y,z,t,&bx,&by,&bz,(void *) (&rdata));
+    printf(" @ ( %g , %g , %g ) = ( %g , %g , %g )\n",x,y,z,bx,by,bz);
+  }
+
+%}
+
+MCDISPLAY
+%{
+  /* A bit ugly; hard-coded dimensions. */
+  magnify("");
+  box(0,0,0,xwidth,yheight,zdepth);
+
+  //ErrProc(RadObjDrwOpenGL(ppoly, 0, 0, 0));
+%}
+
+END
