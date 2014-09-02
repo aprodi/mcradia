@@ -68,7 +68,6 @@ DECLARE
 %{
   radia_data rdata;
   void *dataptr;
-
 %}
 
 INITIALIZE
@@ -82,6 +81,8 @@ INITIALIZE
   int status;
   
   status=RadObjMltExtPgn(&(rdata.ppoly),FV,SL,AT,4,M);
+  rdata.pNb=calloc(1,sizeof(int));
+  *(rdata.pNb)=1;
   if(status<0){
     fprintf(stderr,"Error(%s): Could not set up radia extruded polygon. Aborting\n");
   }
