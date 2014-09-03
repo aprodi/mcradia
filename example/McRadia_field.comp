@@ -59,6 +59,8 @@ SHARE
     *bx=ArrB[0];
     *by=ArrB[1];
     *bz=ArrB[2];
+
+    return status;
   }
 
   
