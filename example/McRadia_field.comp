@@ -103,13 +103,22 @@ TRACE
   if(status){
     PROP_DT(t0);
     SCATTER;
+    /*push the magnetic field onto the magnetic field stack*/
+    mcmagnet_push(radia_magnetic_field,&(ROT_A_CURRENT_COMP),&(POS_A_CURRENT_COMP),0,&(rdata));
     radia_magnetic_field(x,y,z,t,&bx,&by,&bz,(void *) (&rdata) );
     printf(" @ ( %g , %g , %g ) = ( %g , %g , %g )\n",x,y,z,bx,by,bz);
-    /*get next path-point from radia*/
+    
+    /*get next path-point from radia (how?)*/
+    
     /*set v-vector to point there*/
-    /*find t and propagate*/
+    
+    /*find t and propagate. Remember to check for exit from magnet bounds.*/
+    
+    /*go to exit of bounding box*/
     PROP_DT(t1);
     SCATTER;
+    /*pop field off the stack*/
+    mcmagnet_pop();
     radia_magnetic_field(x,y,z,t,&bx,&by,&bz,(void *) (&rdata));
     printf(" @ ( %g , %g , %g ) = ( %g , %g , %g )\n",x,y,z,bx,by,bz);
   }
