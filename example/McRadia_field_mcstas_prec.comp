@@ -34,12 +34,12 @@ OUTPUT PARAMETERS ()
 
 SHARE
 %{
+  %include "pol-lib"
   #include <radentry.h>
 
   typedef struct radia_data {
     int ppoly;
     int *pNb;
-
   } radia_data;
 
 
@@ -63,8 +63,6 @@ SHARE
     return status;
   }
 
-  
-
 %}
 
 
@@ -84,12 +82,22 @@ INITIALIZE
   int ppoly;
   int status;
   
-  status=RadObjMltExtPgn(&(rdata.ppoly),FV,SL,AT,4,M);
-  rdata.pNb=calloc(1,sizeof(int));
-  *(rdata.pNb)=1;
-  if(status<0){
-    fprintf(stderr,"Error(%s): Could not set up radia extruded polygon. Aborting\n");
-  }
+/*  status=RadObjMltExtPgn(&(rdata.ppoly),FV,SL,AT,4,M);*/
+/*  rdata.pNb=calloc(1,sizeof(int));*/
+/*  *(rdata.pNb)=1;*/
+/*  if(status<0){*/
+/*    fprintf(stderr,"Error(%s): Could not set up radia extruded polygon. Aborting\n");*/
+/*  }*/
+
+  double PC[]={0,0,0};
+  double DIMS[3];
+  double BF[]={0,-1,0};
+  DIMS[0]=xwidth;
+  DIMS[1]=yheight;
+  DIMS[2]=zdepth;
+  status=RadObjRecMag(&(rdata.ppoly),PC,DIMS,BF);
+  rdata.pNb=(int*)calloc(1,sizeof(int));
+  *(rdata.pNb)=1;//,rdata.ppoly;
 
 %}
 
@@ -98,7 +106,7 @@ TRACE
 %{
   /**/
   int status;
-  double bx,by,bz,t0,t1;
+  double bx,by,bz,t0,t1,dt,dl,v;
   status=box_intersect(&t0,&t1,x,y,z,vx,vy,vz,xwidth,yheight,zdepth);
   if(status){
     PROP_DT(t0);
@@ -107,13 +115,33 @@ TRACE
     mcmagnet_push(radia_magnetic_field,&(ROT_A_CURRENT_COMP),&(POS_A_CURRENT_COMP),0,&(rdata));
     radia_magnetic_field(x,y,z,t,&bx,&by,&bz,(void *) (&rdata) );
     printf(" @ ( %g , %g , %g ) = ( %g , %g , %g )\n",x,y,z,bx,by,bz);
-    
-    /*get next path-point from radia (how?)*/
-    
-    /*set v-vector to point there*/
-    
-    /*find t and propagate. Remember to check for exit from magnet bounds.*/
-    
+
+    dt=0;
+    while (dt<t1){
+      double P[3];
+      /*get next path-point from radia (how?)*/
+
+      /*set v-vector to point there*/
+      v=sqrt(scalar_prod(vx,vy,vz,vx,vy,vz));
+      dl=sqrt( (P[0]-x)*(P[0]-x) + (P[1]-y)*(P[1]-y) + (P[2]-z)*(P[2]-z));
+      dt=dl/v;
+      vx=(P[0]-x)/dt;
+      vy=(P[1]-y)/dt;
+      vz=(P[2]-z)/dt;
+      /*find t and propagate. Remember to check for exit from magnet bounds.*/
+
+      /*check if we exit the bounding box first*/
+      status==box_intersect(&t0,&t1,x,y,z,vx,vy,vz,xwidth,yheight,zdepth);
+      if(!status || t1<0 ){
+        fprintf(stderr,"Error (%s): neutron has unexpectedly left the magnet bounding box - terminating it\n",NAME_CURRENT_COMP);
+        ABSORB;
+      }
+      if (t1<dt){
+        break;
+      }
+
+      PROP_DT(dt);
+    }
     /*go to exit of bounding box*/
     PROP_DT(t1);
     SCATTER;
