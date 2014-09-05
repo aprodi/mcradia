@@ -1,0 +1,165 @@
+/*******************************************************************************
+*
+* McStas, neutron ray-tracing package
+*         Copyright 1997-2002, All rights reserved
+*         Risoe National Laboratory, Roskilde, Denmark
+*         Institut Laue Langevin, Grenoble, France
+*
+* Component: McRadia_field.comp
+*
+* %I
+*
+* Written by: Erik B Knudsen and Andrea Prodi
+* Origin: DTu Physics, ILL
+*
+* Magnetic field described by Radia.
+*
+* %D
+* You will need to compile this with a c++ compiler against radia and fftw libraries. Possibly also with additional compiler flags.
+* e.g. MCSTAS_CC="g++" MCSTAS_CFLAGS="-g -DHAVE_STRCASESTR=1 -Ipath/to/radentry.h -Lpath/to/libradia -fpermissive" mcrun -lradia -lfftw -n0 -c Instr.instr
+*
+* %P
+* Input parameters:
+*
+* (none)
+*
+* %E
+*******************************************************************************/
+
+  DEFINE COMPONENT McRadia_field
+DEFINITION PARAMETERS ()
+  SETTING PARAMETERS (xwidth=0,yheight=0, zdepth=0)
+OUTPUT PARAMETERS ()
+/* Neutron parameters: (x,y,z,vx,vy,vz,t,sx,sy,sz,p) */ 
+
+SHARE
+%{
+  %include "pol-lib"
+  #include <radentry.h>
+
+  typedef struct radia_data {
+    int ppoly;
+    int *pNb;
+  } radia_data;
+
+
+  /*define the magnetic field function*/
+
+  int radia_magnetic_field(double x, double y, double z, double t, double *bx, double *by, double *bz, void *data){
+    int status;
+    double ObsP[3], ArrB[3];
+    int ppoly;
+    radia_data *rdata=(radia_data *)data;
+
+    ObsP[0]=x;
+    ObsP[1]=y;
+    ObsP[2]=z;
+
+    status=RadFld(ArrB,rdata->pNb,rdata->ppoly, "B", ObsP,1);
+    *bx=ArrB[0];
+    *by=ArrB[1];
+    *bz=ArrB[2];
+
+    return status;
+  }
+
+%}
+
+
+DECLARE
+%{
+  radia_data rdata;
+  void *dataptr;
+%}
+
+INITIALIZE
+%{
+  double M[] = {0., 0., 1.};
+
+  double FV[] = {0.,0.,1.,1.,-1.,1.,-1.,-1.,1.,-1.,0.,0.,0.,1.,1.,1.,1.,0.};
+  int SL[] = {1,4,1,3};
+  double AT[] = {0., 1., 2., 3.};
+  int ppoly;
+  int status;
+  
+/*  status=RadObjMltExtPgn(&(rdata.ppoly),FV,SL,AT,4,M);*/
+/*  rdata.pNb=calloc(1,sizeof(int));*/
+/*  *(rdata.pNb)=1;*/
+/*  if(status<0){*/
+/*    fprintf(stderr,"Error(%s): Could not set up radia extruded polygon. Aborting\n");*/
+/*  }*/
+
+  double PC[]={0,0,0};
+  double DIMS[3];
+  double BF[]={0,-1,0};
+  DIMS[0]=xwidth;
+  DIMS[1]=yheight;
+  DIMS[2]=zdepth;
+  status=RadObjRecMag(&(rdata.ppoly),PC,DIMS,BF);
+  rdata.pNb=(int*)calloc(1,sizeof(int));
+  *(rdata.pNb)=1;//,rdata.ppoly;
+
+%}
+
+
+TRACE
+%{
+  /**/
+  int status;
+  double bx,by,bz,t0,t1,dt,dl,v;
+  status=box_intersect(&t0,&t1,x,y,z,vx,vy,vz,xwidth,yheight,zdepth);
+  if(status){
+    PROP_DT(t0);
+    SCATTER;
+    /*push the magnetic field onto the magnetic field stack*/
+    mcmagnet_push(radia_magnetic_field,&(ROT_A_CURRENT_COMP),&(POS_A_CURRENT_COMP),0,&(rdata));
+    radia_magnetic_field(x,y,z,t,&bx,&by,&bz,(void *) (&rdata) );
+    printf(" @ ( %g , %g , %g ) = ( %g , %g , %g )\n",x,y,z,bx,by,bz);
+
+    dt=0;
+    while (dt<t1){
+      double P[3];
+      /*get next path-point from radia (how?)*/
+
+      /*set v-vector to point there*/
+      v=sqrt(scalar_prod(vx,vy,vz,vx,vy,vz));
+      dl=sqrt( (P[0]-x)*(P[0]-x) + (P[1]-y)*(P[1]-y) + (P[2]-z)*(P[2]-z));
+      dt=dl/v;
+      vx=(P[0]-x)/dt;
+      vy=(P[1]-y)/dt;
+      vz=(P[2]-z)/dt;
+      /*find t and propagate. Remember to check for exit from magnet bounds.*/
+
+      /*check if we exit the bounding box first*/
+      status==box_intersect(&t0,&t1,x,y,z,vx,vy,vz,xwidth,yheight,zdepth);
+      if(!status || t1<0 ){
+        fprintf(stderr,"Error (%s): neutron has unexpectedly left the magnet bounding box - terminating it\n",NAME_CURRENT_COMP);
+        ABSORB;
+      }
+      if (t1<dt){
+        break;
+      }
+
+      PROP_DT(dt);
+    }
+    /*go to exit of bounding box*/
+    PROP_DT(t1);
+    SCATTER;
+    /*pop field off the stack*/
+    mcmagnet_pop();
+    radia_magnetic_field(x,y,z,t,&bx,&by,&bz,(void *) (&rdata));
+    printf(" @ ( %g , %g , %g ) = ( %g , %g , %g )\n",x,y,z,bx,by,bz);
+  }
+
+%}
+
+MCDISPLAY
+%{
+  /* A bit ugly; hard-coded dimensions. */
+  magnify("");
+  box(0,0,0,xwidth,yheight,zdepth);
+
+  //ErrProc(RadObjDrwOpenGL(ppoly, 0, 0, 0));
+%}
+
+END
